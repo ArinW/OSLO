@@ -1,37 +1,140 @@
-## Welcome to GitHub Pages
+Aidan Gomez
+May 13, 2021
+OSLO Project Documentation
 
-You can use the [editor on GitHub](https://github.com/atomdog/OSLO/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+Introduction: 
+OSLO, or Open Source Loop Operator is an attempt to democratize virtual assistants in order to combat the Faustian nature of the technology in its current state, as well as address the generally unintuitive design and limited scope of most commercially available products. 
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+The problem: 
+In their current state, virtual assistant products as made available to the consumer are functionally limited and unintuitive to navigate. Conversations with one of these agents feel more like querying a search engine rather than speaking with something intelligent or complex in any manner. They are memoryless and behave identically, regardless of the user or unit. There is no consideration of context, the surrounding environment, or time. These devices also do not learn, adapt, or develop any form of behavior that would permit it to be distinguished from another device. Beyond this, they typically lack any offline capabilities, and are rendered entirely useless by so much as a network misconfiguration or temporary outage. Given that most IOT peripherals that any current virtual assistant control connect to it via TCP, a user would be doubly incapable of turning their lights when your wifi goes out. Furthermore, most networked ‘smart home’ solutions in implementation are massive soft targets for hackers. Many users today are fortunate enough to have the humiliating experience of being hacked through their lightbulb or fridge. In fact, a major component of OSLO’s non-native functionality is via exploiting the lackadaisical security of preexisting home automation systems such as the Roku or any number of smart outlets. 
 
-### Markdown
+Beyond this, in order to use a device such as this, you must effectively sign a Faustian deal. In return for a novelty speech to text interface over a search engine, you must sacrifice massive quantities of personal information to monolithic corporate entities which proceed to generate profit by selling it in one manner or another. Not only is this problematic because of the ethical concerns of effectively being forced to give away intimate details about your personal life, but it also encourages an extremely problematic relationship between the general public, and major corporations which vanguard the development of the devices which form such a major component of modern life. Now, rather than simply purchasing some novel invention, say a fridge, you must purchase it and subject yourself to the same fridge spying on you for the duration of its use. Additionally, development in pursuit of this form of profit margin, especially within the context of a virtual assistant, nearly completely stifles creative pursuits. Nobody wants a virtual assistant that will decide it doesn’t want, or whatever ‘want’ could be described as for an algorithm, to turn on your lights when you ask it. 
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+OSLO as part of a solution:
+While systemic change regarding the tech industry’s exploitation of its consumers will require pressure from the public and monumental effort, a single product such as OSLO could hypothetically undermine the niche field of virtual assistants. OSLO does all of its computation offline, using no major corporate API’s. Your information never leaves the device. Additionally, optimization is a primary component of OSLO’s development philosophy. Currently OSLO is capable of running with a relatively low computational impact, meaning it can be run decently well on cheap SBCs or old unused computers. A copy of OSLO could be implemented on nearly any computer that can run UNIX, with the only real cost being a microphone adequate for speech recognition at range. 
 
-```markdown
-Syntax highlighted code block
+Overview:
+OSLO operates using several loops, in the form of semi-coroutines. Each loop is responsible for a dimension of the agent’s capabilities and functionality. Currently there are five loops; The central ‘executive planning’ loop, the language parsing loop, the visual loop, the audio loop, and the ‘actuator’ loop. The main loop itself is in some manner recursive, not in the technical sense, but that it refers to itself. This is intentional, 
 
-# Header 1
-## Header 2
-### Header 3
+Executive Loop:
+The executive loop is composed of the causal model (see below) as well as a stack based ‘perception’ model. As states occur, they are pushed onto a stack which stores them linearly, in the same manner we do. 
+Causal Model:
+All states can be described as either:
 
-- Bulleted
-- List
+Actions (Originate from within the self) -> Can be triggered to manipulate current state position
+Stimuli (Observations, interactions, changes in sensor value) -> Cannot be triggered by the model
+Rewards (Desirable states, incentivized by separate model)
+According to Hume:
 
-1. Numbered
-2. List
+Cause must be contiguous to effect -> Assuming that any arbitrary state can lead to any other arbitrary state, the graph must be well connected
+Cause precedes effect -> Our graph must be directed
+According to the Multiple Clock Theory, we measure time in several different ways. We can define a set of clocks as the following:
 
-**Bold** and _Italic_ and `Code` text
+Short term (measured in seconds) (0)
+Mid term (minutes) (1)
+Long term (hours) (2)
+Extra long term (days) (3)
+Each clock can be bounded by a constant, to be refined during model run-time. We can place a set of clocks in every possible pathway between any two edges on the graph. Each clock can represent the probability of the state it leads to occurring within its bounds. Upon reaching a state, the clocks begin ticking until the constant bound elapses. If another state occurs the probability value of the smallest indexed clock still ticking is updated.
 
-[Link](url) and ![Image](src)
-```
+Above is a depiction of what the graph would look like when visualized, with the squares being the set of clocks, and circles being states.
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+Given the nature of the graph built so far, it would be simple to implement a simple Markov chain to gain a sense, probabilistically, of how one state may lead to another, in a manner true to a human's cognition.
 
-### Jekyll Themes
+We can define a transition matrix, T, where rather than every entry being a singular probability, every entry is a vector t, which is composed of the four probability values of the clock, and perform any standard Markov processes.
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/atomdog/OSLO/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+However, the model can also trigger any action state from the current stimuli state, if given the current observation state, taking that action results in an increased probability of a reward state. 
 
-### Support or Contact
+The ultimate result of this marriage is a novel algorithm possessing the capabilities of both an agent based approach, like Q-learning and a MC. 
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+Here is where this requires further work. It seems difficult to implement conditional probability via the transition matrix without forming an alternate N2sized transition matrix, and N3, so on, so forth, for chained conditional probability.
+
+Stack Perception:
+States, as defined in the causal model, occur, and are pushed onto a stack, regardless of their nature, be they actions, stimuli and rewards. This provides a linear way to track occurrences in a more true to cognition manner.
+Profiles:
+Individuals encountered by OSLO are profiled in a number of manners, and stored in profile, which acts as OSLO’s understanding of entities.
+Rewards:
+OSLO’s reward system is the ultimate governing factor in its behavior. A reward state can be defined in an arbitrary manner, but within the original documentation, OSLO was to be designed to optimize the following: 
+Positive Emotion: Measured positive emotion from the user. This is defined very generally on purpose. 
+Curiosity: OSLO currently has an experimental function where it can expand a node on the concept graph via it’s summarization tool. This allows it to ‘discover’ new tangential concepts. 
+Performance: Carrying out specific tasks correctly and receiving clear affirmation or a manual trigger of a reward state from the user.
+Survival: OSLO periodically has a triggered reward state every n minutes from initialization of main loop. 
+Currently OSLO possesses a wide range of tools to assess user emotion, ie sentiment, via speech, text, or facial expressions. In the original documentation for OSLO.
+Audio Loop:
+This loop handles speech to text as well as speaker attribution. Currently, real time speech to text with above 80% accuracy has been achieved. Additionally, via a variety of clustering algorithms, aggregated, speaker ID with near 100% accuracy with as few as 3 samples has been achieved. Voice emotiveness analysis is currently under development. 
+
+Visual:
+Face recognition, as well as the ability to recognize and remember new faces is currently implemented, but has not been entirely optimized. 
+
+Gesture recognition and control has been implemented using custom TF-lite models at 96% accuracy in real time, requiring only a single camera, as opposed to popular gesture recognition technologies which involve an expensive stereo camera.
+
+
+
+Actions:
+Currently OSLO is capable of a large number of home automation tasks using custom low cost RF modules to combat IOT vulnerabilities and harden the system against remote attacks. It can:
+Turn lights on and off
+Control IR devices using custom hardware
+Create schedules and plan your day using task scheduling algorithms
+Monitor networks and remove devices
+Control third party internet enabled devices such as Roku and Samsung TVs
+Send and receive emails
+Send and receive texts at no cost using SMTP workaround
+Summarize wikipedia articles 
+Provide nearly any information necessary about the weather, create a forecast
+Play music
+Monitor radio signals up to 2.4GHZ via SDR
+Where legal, access most public safety and police communications, perform speech to text, and parse. Capable of providing 
+Determine proximity of law enforcement via signal strength
+Play radio stations
+Gather headlines through custom scraping tool
+Divert users from potentially dangerous situations
+
+
+Language:
+POS tagging as well as subject-object relations are nearly implemented. This allows OSLO a more complex understanding of individuals and context. States have ‘neural ensembles’ attached to them which allow for association of various forms of words and states. A graph based approach has been utilized to build complex understanding of concepts. 
+ConceptGraph:
+OSLO’s concept graph begins by reading in a sentence, either via argument, or via text line. Specific semantic structures are then compressed, such as multiword objects. For example, a sentence like "I just visited the drug store.", which is initially tagged 
+
+['I:nsubj', 'just:advmod', 'visited:ROOT', 'the:det', 'drug:compound', 'store:dobj', '.:punct']
+
+would be compressed to
+
+['I:nsubj', 'just:advmod', 'visited:ROOT', 'the:det', 'drug store:compounddobj', '.:punct']
+
+The text of each word as well as its role in the sentence are concatenated and then hashed, forming a unique representation of a word in a specific semantic context. As Oslo parses a sentence, it scans the existing graph for vertices matching the current sentence. It then creates new vertices as needed, and ties the sentence together with custom edges, which possess several traits.  
+Below is a visual representation of OSLO’s parsing of a passage from Walden Pond.
+
+Sentences are also partially converted into a symbolic language, with negations and logical relationships automatically converted into a more representable format. 
+This is fundamentally different from how current virtual assistants parse language. As an exercise, ask Siri, Alexa, or Google Home to not tell you the weather. 
+You will find that they will entirely disregard this negation, belying their complete lack of understanding of a sentence. 
+
+WordCharge:
+A single word sentiment analysis model allows OSLO to gauge individual words' sentiments. Using the ConceptGraph a more sophisticated sentiment analysis has been achieved, rather than the industry standard TF-IDF based sentiment models. OSLO can identify specific sentiments about subjects, rather than assuming a broad general sentiment. 
+
+PersonalityGraph:
+Via an extension of the ConceptGraph, OSLO can be given a personality, including likes and dislikes as well as opinions. Every vertex in a ConceptGraph possesses a “charge”, and every edge possesses a “charge mod”. This can be merged directly into an existing ConceptGraph or created during initialization as the structure remains identical. Below is an extremely rudimentary example. 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hardware
+Alongside the software a myriad of custom “I”OT devices have been developed following the aforementioned design principles laid out. Consider briefly the use of your average “smart” lightbulb. First, you ask your commercial virtual assistant to turn on the lights. Your voice is then transmitted to a data center, where it is processed. From there, a conclusion is drawn, and a request from that data center is sent to the data center of the company (Most popular IOT lightbulb services are hosted in China) which provides the lightbulb service, where it is validated, and then a command is sent back to your network. This is very much like if the wires between your light and your lightswitch were wrapped around the entire world, for absolutely no reason. 
+
+All OSLO hardware uses RF to communicate locally, forgoing the need for even a wifi network. 
+
+Not only does this make much more sense than the vagrant light switch solution, it also solves the IOT security crisis. Internet connected refrigerators, lightbulbs, cameras, and photo frames routinely go without firmware updates while using default passwords. Hopping codes and custom encryption make even replay attacks from nearby malicious actors difficult. 
+
+Additionally, OSLO’s current hardware suite undercuts the cost of available counterparts by 90%, or more in some cases. 
+
